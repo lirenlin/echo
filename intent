@@ -1,0 +1,37 @@
+{
+  "intents": [
+    {
+      "intent": "GetLightStatus"
+    },
+    {
+      "intent": "SetLightStatus",
+      "slots": [
+        {
+          "name": "status",
+          "type": "LIST_OF_STATUS"
+        }
+      ]
+    },
+    {
+      "intent": "SetPercentage",
+       "slots": [
+        {
+          "name": "percentage",
+          "type": "AMAZON.NUMBER"
+        }
+      ]
+    },
+    {
+      "intent": "GetPercentage"
+    },
+    {
+      "intent": "GetDate"
+    },
+    {
+      "intent": "AMAZON.HelpIntent"
+    },
+    {
+      "intent": "AMAZON.StopIntent"
+    }
+  ]
+}
