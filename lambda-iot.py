@@ -12,6 +12,9 @@ key_file = cert_path + "private.pem.key"
 
 client = boto3.client('iot-data', region_name='eu-west-1')
 
+light_status = "OFF"
+light_percentage = "0"
+
 def lambda_handler(event, context):
     if (event["session"]["application"]["applicationId"] !=
     "amzn1.ask.skill.fac0b3c8-60c7-45c5-921c-d8141f840e73"):
@@ -83,7 +86,7 @@ def get_system_status(intent):
     reprompt_text = ""
     should_end_session = False
 
-    speech_output = "The light is currently OFF"
+    speech_output = "The light is currently " + light_status
 
     return mqtt_publish (intent, session_attributes, card_title, speech_output,
             reprompt_text, should_end_session)
@@ -94,11 +97,13 @@ def set_system_status(intent):
     speech_output = "I am not sure what you mean, please do it again"
     reprompt_text = ""
     should_end_session = False
+    global light_status
 
     if "status" in intent["slots"]:
         status = intent["slots"]["status"]["value"]
         if status in ["on", "off"]:
             speech_output = "The light is set " + status
+            light_status = status
         else:
             speech_output = "Unknown status " + status
 
@@ -122,10 +127,11 @@ def set_system_percentage(intent):
     speech_output = "I am not sure what you mean, please do it again"
     reprompt_text = ""
     should_end_session = False
+    global light_percentage
 
     if "percentage" in intent["slots"]:
-        percentage = intent["slots"]["percentage"]["value"]
-        speech_output = "The light is set to " + percentage + "%"
+        light_percentage = intent["slots"]["percentage"]["value"]
+        speech_output = "The light is set to " + light_percentage + "%"
 
     return mqtt_publish (intent, session_attributes, card_title, speech_output,
             reprompt_text, should_end_session)
