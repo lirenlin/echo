@@ -18,13 +18,14 @@ key_file = cert_path + "private.pem.key"
 globalmessage = ""  # to send status back to MQTT
 isConnected = False
 
-def get_system_status():
+def get_system_status(data):
     speech_output = "The light is currently " + light_status
     print (speech_output)
 
 def set_system_status(data):
+    global light_status
     speech_output = ""
-    status = data["slots"]["task"]["value"]
+    status = data["slots"]["status"]["value"]
 
     if status in ["on", "off"]:
         light_status = status
@@ -33,15 +34,17 @@ def set_system_status(data):
         speech_output = "Unknown status " + status
     print (speech_output)
 
-def get_system_percentage():
+def get_system_percentage(data):
     speech_output = "The light is currently " + light_percentage + "%"
     print (speech_output)
 
 def set_system_percentage(data):
+    global light_percentage
     speech_output = ""
 
-    percentage = data["slots"]["task"]["value"]
-    if percentage >= 0 or percentage <= 100:
+    percentage = data["slots"]["percentage"]["value"]
+    print (percentage)
+    if int (percentage) >= 0 or int (percentage) <= 100:
         light_percentage = percentage
         speech_output = "The light is set to " + light_percentage + "%"
     else:
@@ -49,11 +52,11 @@ def set_system_percentage(data):
 
     print (speech_output)
 
-def get_system_date():
+def get_system_date(data):
     speech_output = "The date is " + time.strftime("%c")
     print (speech_output)
 
-def get_welcome_response():
+def get_welcome_response(data):
     speech_output = "Hello World!"
     print (speech_output)
 
@@ -61,7 +64,7 @@ dispatch = {
         'GetLightStatus': get_system_status,
         'SetLightStatus': set_system_status,
         'SetPercentage': set_system_percentage,
-        'GetPercentgage': get_system_percentage,
+        'GetPercentage': get_system_percentage,
         'GetDate': get_system_date,
         'AMAZON.HelpIntent': get_welcome_response
         }
@@ -105,7 +108,7 @@ run = True
 try:
     while run:
         client.loop()
-        time.sleep(1)
+        time.sleep(0.1)
         #mypayload = 'response'
         #client.publish (topic, mypayload)
 
