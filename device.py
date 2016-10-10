@@ -75,9 +75,8 @@ def on_connect(client, userdata, flags, rc):
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-    #data = json.loads(str(msg.payload))
-    data = str(msg.payload)
-    print (data)
+    data = msg.payload.decode ("utf-8")
+    data = json.loads(data)
     # INTENT
     if "name" in data:
         command = data["name"]
