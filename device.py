@@ -89,7 +89,6 @@ def on_message(client, userdata, msg):
             print ("unknown command: %s" % command)
     else:
         print ("unknow message")
-        print (data)
 
 client = mqtt.Client(client_id="device.py")
 client.on_connect = on_connect
@@ -109,8 +108,7 @@ try:
     while run:
         client.loop()
         time.sleep(0.1)
-        #mypayload = 'response'
-        #client.publish (topic, mypayload)
+        #client.publish (push_topic, "{\"hello\": 1}")
 
 except KeyboardInterrupt:
     print ("Bye Bye!")
