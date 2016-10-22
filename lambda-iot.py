@@ -2,41 +2,8 @@ import json
 import time
 import boto3
 
-host = "https://avkhjfj8t3ivk.iot.eu-west-1.amazonaws.com"
 topic = r"$aws/things/dummy/shadow/update"
-
-cert_path = "./cert/"
-root_cert = cert_path + "rootCA.key"
-cert_file = cert_path + "certificate.pem.crt"
-key_file = cert_path + "private.pem.key"
-
 client = boto3.client('iot-data', region_name='eu-west-1')
-
-def on_connect(client, userdata, flags, rc):
-    isConnected = True
-    client.subscribe(topic)
-
-def on_message(client, userdata, msg):
-    data = msg.payload.decode ("utf-8")
-    data = json.loads(data)
-    # INTENT
-    if "name" in data:
-        command = data["name"]
-        print command
-    else:
-        print ("unknow message")
-
-client = mqtt.Client(client_id="device.py")
-client.on_connect = on_connect
-client.on_message = on_message
-client.tls_set(root_cert,
-               certfile = cert_file,
-               keyfile = key_file,
-               cert_reqs=ssl.CERT_REQUIRED,
-               tls_version=ssl.PROTOCOL_TLSv1_2,
-               ciphers=None)
-
-client.connect(host, 8883, 60)
 
 light_status = "OFF"
 light_percentage = "0"
