@@ -9,8 +9,9 @@ light_status = "OFF"
 light_percentage = "0"
 
 def lambda_handler(event, context):
-    if (event["session"]["application"]["applicationId"] !=
-    "amzn1.ask.skill.fac0b3c8-60c7-45c5-921c-d8141f840e73"):
+    appID = event["session"]["application"]["applicationId"]
+    if (appID != "amzn1.ask.skill.fac0b3c8-60c7-45c5-921c-d8141f840e73"
+            and appID != "amzn1.ask.skill.472810a7-e6e9-4d80-98bb-741495bb3a1b"):
         raise ValueError("Invalid Application ID")
 
     if event["session"]["new"]:
