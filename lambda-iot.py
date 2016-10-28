@@ -70,7 +70,7 @@ def handle_session_end_request(intent):
 def get_welcome_response():
     session_attributes = {}
     card_title = "i-ideal"
-    speech_output = "Welcome to the Alexa dummy skill. "\
+    speech_output = "Welcome to the i-ideal smart light system. "\
     "You can ask me the information about the light"
     reprompt_text = "Please ask me for the status"
     should_end_session = False
@@ -146,6 +146,7 @@ def set_system_status(intent):
                     reprompt_text, should_end_session))
 
     speech_output = "The %s light is set %s" %(num, status)
+    should_end_session = True
 
     # build a simple message for the device
     msg = {"name": intent["name"],
@@ -159,7 +160,7 @@ def get_system_percentage(intent):
     session_attributes = {}
     card_title = "Light System Status"
     reprompt_text = ""
-    should_end_session = False
+    should_end_session = True
 
     speech_output = "The light is currently " + light_percentage + "%"
 
@@ -171,7 +172,7 @@ def set_system_percentage(intent):
     card_title = "Light System Status"
     speech_output = "I am not sure what you mean, please do it again"
     reprompt_text = ""
-    should_end_session = False
+    should_end_session = True
     global light_percentage
 
     if "percentage" in intent["slots"]:
