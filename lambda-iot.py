@@ -128,7 +128,7 @@ def set_system_status(intent):
                 "second": 2, "2nd": 2, "2": 2,
                 "third": 3, "3rd": 3, "3": 3,
                 "fourth": 4, "4th": 4, "4":4,
-                "all": 5}
+                "last": 4, "all": 5}
 
         if num_str in dic:
             num = num_str;
