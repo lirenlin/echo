@@ -7,5 +7,3 @@ SetLightStatus {num} light {status}
 GetPercentage tell me the percentage
 GetPercentage what is the percentage
 SetPercentage set the light to {percentage}
-GetDate what is the date
-GetDate what day is it today

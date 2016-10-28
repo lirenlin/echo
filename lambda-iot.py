@@ -43,8 +43,6 @@ def on_intent(intent_request, session):
         return get_system_percentage(intent)
     elif intent_name == "SetPercentage":
         return set_system_percentage(intent)
-    elif intent_name == "GetDate":
-        return get_system_date(intent)
     elif intent_name == "AMAZON.HelpIntent":
         return get_welcome_response()
     elif (intent_name == "AMAZON.CancelIntent"
@@ -179,17 +177,6 @@ def set_system_percentage(intent):
     if "percentage" in intent["slots"]:
         light_percentage = intent["slots"]["percentage"]["value"]
         speech_output = "The light is set to " + light_percentage + "%"
-
-    return mqtt_publish (intent, session_attributes, card_title, speech_output,
-            reprompt_text, should_end_session)
-
-def get_system_date(intent):
-    session_attributes = {}
-    card_title = "Light System Status"
-    reprompt_text = ""
-    should_end_session = False
-
-    speech_output = "The date is " + time.strftime("%c")
 
     return mqtt_publish (intent, session_attributes, card_title, speech_output,
             reprompt_text, should_end_session)

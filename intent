@@ -9,6 +9,10 @@
         {
           "name": "status",
           "type": "LIST_OF_STATUS"
+        },
+        {
+          "name": "num",
+          "type": "LIST_OF_LIGHT"
         }
       ]
     },
@@ -23,9 +27,6 @@
     },
     {
       "intent": "GetPercentage"
-    },
-    {
-      "intent": "GetDate"
     },
     {
       "intent": "AMAZON.HelpIntent"
