@@ -1,7 +1,9 @@
 GetLightStatus tell me the status of light
 GetLightStatus what is the status of light
-SetLightStatus set the light {status}
-SetLightStatus light {status}
+SetLightStatus set the {num} light {status}
+SetLightStatus turn the {num} light {status}
+SetLightStatus turn {status} the {num} light
+SetLightStatus {num} light {status}
 GetPercentage tell me the percentage
 GetPercentage what is the percentage
 SetPercentage set the light to {percentage}
