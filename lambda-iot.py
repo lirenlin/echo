@@ -90,7 +90,7 @@ def get_system_status(intent):
     session_attributes = {}
     card_title = "Light System Status"
     reprompt_text = ""
-    should_end_session = False
+    should_end_session = True
 
     speech_output = "The light is currently " + light_status
 
@@ -141,6 +141,7 @@ def set_system_status(intent):
 
     # If any information is missing, report to the user.
     if num == None or status == None:
+        reprompt_text = "please give me proper instruction"
         return build_response(session_attributes,
                 build_speechlet_response(card_title, speech_output,
                     reprompt_text, should_end_session))
