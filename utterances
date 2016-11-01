@@ -1,9 +1,11 @@
-GetLightStatus tell me the status of light
-GetLightStatus what is the status of light
-SetLightStatus set the {num} light {status}
-SetLightStatus turn the {num} light {status}
-SetLightStatus turn {status} the {num} light
-SetLightStatus {num} light {status}
-GetPercentage tell me the percentage
-GetPercentage what is the percentage
-SetPercentage set the light to {percentage}
+GetDeviceStatus tell me the status of {device}
+GetDeviceStatus what is the status of {device}
+
+SetDeviceStatus set the {device} {status}
+SetDeviceStatus turn the {device} {status}
+SetDeviceStatus turn {status} {device}
+SetDeviceStatus {device} {status}
+
+GetDeviceDim what is the percentage of {dimdevice}
+SetDeviceDim set the {dimdevice} to {percentage}
+SetDeviceDim dim the {dimdevice} to {percentage}

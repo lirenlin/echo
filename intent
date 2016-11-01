@@ -1,24 +1,33 @@
 {
   "intents": [
     {
-      "intent": "GetLightStatus"
+      "intent": "GetDeviceStatus",
+      "slots": [
+        {
+          "name": "device",
+          "type": "LIST_OF_DEVICE"
+        }]
     },
     {
-      "intent": "SetLightStatus",
+      "intent": "SetDeviceStatus",
       "slots": [
         {
           "name": "status",
           "type": "LIST_OF_STATUS"
         },
         {
-          "name": "num",
-          "type": "LIST_OF_LIGHT"
+          "name": "device",
+          "type": "LIST_OF_DEVICE"
         }
       ]
     },
     {
-      "intent": "SetPercentage",
-       "slots": [
+      "intent": "SetDeviceDim",
+      "slots": [
+        {
+          "name": "dimdevice",
+          "type": "LIST_OF_DIM"
+        },
         {
           "name": "percentage",
           "type": "AMAZON.NUMBER"
@@ -26,7 +35,12 @@
       ]
     },
     {
-      "intent": "GetPercentage"
+      "intent": "GetDeviceDim",
+      "slots": [
+        {
+          "name": "dimdevice",
+          "type": "LIST_OF_DIM"
+        }]
     },
     {
       "intent": "AMAZON.HelpIntent"

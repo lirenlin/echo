@@ -3,11 +3,12 @@ LIST_OF_STATUS
 ON
 OFF
 
-LIST_OF_LIGHT
+LIST_OF_DEVICE
 
-first
-second
-third
-fourth
-last
-all
+kitchen light
+living room light
+bedroom light
+coffee maker
+
+LIST_OF_DIM
+bedroom light
