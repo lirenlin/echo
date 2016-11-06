@@ -113,8 +113,6 @@ def on_intent(intent_request, session):
         return get_system_status(intent)
     elif intent_name == "SetDeviceStatus":
         return set_system_status(intent)
-    elif intent_name == "GetDeviceDim":
-        return get_system_percentage(intent)
     elif intent_name == "SetDeviceDim":
         return set_system_percentage(intent)
     elif intent_name == "AMAZON.HelpIntent":
@@ -252,37 +250,6 @@ def set_system_status(intent):
 
     return mqtt_publish (msg, session_attributes, card_title,
             speech_output, reprompt_text, should_end_session)
-
-def get_system_percentage(intent):
-    session_attributes = {}
-    card_title = "Smart home Status"
-    speech_output = ""
-    reprompt_text = ""
-    should_end_session = True
-
-    global deviceList
-    global deviceDict
-
-    if "device" in intent["slots"]:
-        device_str = intent["slots"]["device"]["value"]
-	device_str = device_str.lower ()
-
-        if device_str in deviceDict:
-	    device = deviceList[deviceDict[device_str]]
-	    if device.isDimmable () == 0:
-                speech_output = "%s is not dimmable" % (device_str)
-                should_end_session = False
-    	    else:
-                speech_output = "%s is currently %d \%" % (device_str, device.getDim ())
-	else:
-	    speech_output = "unknown smart device"
-            should_end_session = False
-    else:
-        speech_output = "please tell me which smart device"
-        should_end_session = False
-
-    return mqtt_publish ("", session_attributes, card_title, speech_output,
-            reprompt_text, should_end_session)
 
 def set_system_percentage(intent):
     session_attributes = {}

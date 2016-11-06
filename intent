@@ -35,14 +35,6 @@
       ]
     },
     {
-      "intent": "GetDeviceDim",
-      "slots": [
-        {
-          "name": "dimdevice",
-          "type": "LIST_OF_DIM"
-        }]
-    },
-    {
       "intent": "AMAZON.HelpIntent"
     },
     {
