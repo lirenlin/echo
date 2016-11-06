@@ -5,8 +5,67 @@ import boto3
 client = boto3.client('iot-data', region_name='eu-west-1')
 topic = r"$aws/things/dummy/shadow/update"
 
-device_status = "OFF"
-light_percentage = "0"
+deviceList = []
+deviceDict = {}
+
+class Device:
+	def __init__ (self, id, name, dimmable, status=0):
+		# Those attribute are read-only
+		self.deviceID = id;
+		self.name = name;
+		self.dimmable = dimmable;
+
+		self.status = status;
+		self.dim = 0;
+
+	def setStatus (self, status):
+		self.status = status
+	def status (self):
+		return self.status
+
+	def id (self):
+		return self.deviceID
+
+	def getDim (self, dim):
+		return self.dim
+	def dim (self, dim):
+		self.dim = dim
+
+	def validDevice (self):
+		return (self.deviceID >= 0)
+	def dimmable (self):
+		return self.dimmable
+	def __str__ (self):
+		return "deviceID: %s, Name: %s, Status: %s, Dimmable: %s" % \
+				(self.deviceID, self.name[0], self.status, self.dimmable)
+
+def init_device_list ():
+	global deviceList
+	global deviceDict
+
+	name = ["all"]
+	deviceList[0] = Device (0, name, 0)
+
+	name = ["kitchen light", "kitchen"]
+	deviceList[1] = Device (1, name, 0)
+
+	name = ["living room light", "livingroom light", "living"]
+	deviceList[2] = Device (2, name, 0)
+
+	# this is dimmable
+	name = ["bedroom light", "bed room light", "bedroom"]
+	deviceList[3] = Device (3, name, 1)
+
+	name = ["coffee maker", "coffee", "coffeemaker"]
+	deviceList[4] = Device (4, name, 0)
+
+
+        deviceDict = {"kitchen light": 1, "kitchen": 1,
+                "living room light": 2, "livingroom light": 2, "living": 2, 
+                "bedroom light": 3, "bed room light": 3, "bedroom": 3,
+                "coffee maker": 4, "coffee": 4, "coffeemaker": 4,
+                "all": 0}
+
 
 def lambda_handler (event, context):
     appID = event["session"]["application"]["applicationId"]
@@ -14,6 +73,8 @@ def lambda_handler (event, context):
             and appID != "amzn1.ask.skill.472810a7-e6e9-4d80-98bb-741495bb3a1b"
             and appID != "amzn1.ask.skill.dd916f2d-6443-4fa6-b9ff-3dc547fe0c0e"):
         raise ValueError("Invalid Application ID")
+
+    init_device_list ();
 
     if event["session"]["new"]:
         on_session_started ({"requestId": event["request"]["requestId"]},
@@ -65,6 +126,7 @@ def handle_session_end_request(intent):
     reprompt_text = ""
     should_end_session = True
     msg = {"name": "stop"}
+    msg = build_push_msg ("stop", 0, 0, 0)
 
     return mqtt_publish (msg, session_attributes, card_title, speech_output,
         reprompt_text, should_end_session)
@@ -94,17 +156,25 @@ def get_system_status(intent):
     reprompt_text = ""
     speech_output = ""
     should_end_session = True
-    device = None
+
+    global deviceList
+    global deviceDict
 
     if "device" in intent["slots"]:
-        device = intent["slots"]["device"]["value"]
-        speech_output = "%s is currently %" %(device, device_status)
+        device_str = intent["slots"]["device"]["value"]
+        device_str = device_str.lower()
+
+        if device_str in deviceDict:
+            device = deviceList[deviceDict[device_str]];
+            speech_output = "%s is currently %" %(device_str, device.status())
+        else:
+            speech_output = "unknown device"
     else:
-        speech_output = "please tell me which smart device"
+        speech_output = "please tell me which device"
         should_end_session = False
 
-    return mqtt_publish (intent, session_attributes, card_title, speech_output,
-            reprompt_text, should_end_session)
+    return build_response(session_attributes, build_speechlet_response(
+        card_title, speech_output, reprompt_text, should_end_session))
 
 def set_system_status(intent):
     session_attributes = {}
@@ -112,56 +182,56 @@ def set_system_status(intent):
     speech_output = ""
     reprompt_text = ""
     should_end_session = False
-    global device_status
 
+    global deviceDict
+    global deviceList
+
+    deviceID = -1;
     status = None;
-    deviceID = None;
 
-    # get proper status
-    if "status" in intent["slots"]:
-        status_str = intent["slots"]["status"]["value"]
-        status_str = status_str.lower()
-        if status_str in ["on", "off"]:
-            device_status = status_str
-            status = status_str
-        else:
-            speech_output = "Unknown status, Only on or off is accepted"
-    else:
-        speech_output = "please tell me what to do with smart device"
+    status_str = None;
+    device_str = None;
 
     # get proper device
     if "device" in intent["slots"]:
         device_str = intent["slots"]["device"]["value"]
         device_str = device_str.lower()
-        dic = {"kitchen light": 1, "kitchen": 1,
-                "living room light": 2, "livingroom light": 2, "living": 2, 
-                "bedroom light": 3, "bed room light": 3, "bedroom": 3,
-                "coffee maker": 4, "coffee": 4, "coffeemaker": 4,
-                "all": 5}
 
-        if device_str in dic:
-            device = device_str;
-            # make the code in device simpler
-            intent["slots"]["device"]["value"] = dic[device]
+        if device_str in deviceDict:
+            deviceID = intent["slots"]["device"]["value"] = deviceList[deviceDict[device_str]].id ()
+
+           # get proper status
+           if "status" in intent["slots"]:
+               status_str = intent["slots"]["status"]["value"]
+               status_str = status_str.lower()
+               if status_str == "on":
+                   status = 1
+		   device.setStatus (status)
+               else if status_str == "off":
+                   status = 0
+		   device.setStatus (status)
+               else:
+                   reprompt_text = "Unknown status, Only on or off is accepted"
+           else:
+               reprompt_text = "please tell me what to do with %s" % (device_str)
+
         else:
-            speech_output = "Unknown device. Only 1 to 4 light is available"
+            reprompt_text = "Unknown device %s." % (device_str)
     else:
-        speech_output = "please tell me which device"
+        reprompt_text = "please tell me which device"
 
     # If any information is missing, report to the user.
-    if device == None or status == None:
+    if deviceID == None or status == None:
         reprompt_text = "please give me proper instruction"
         return build_response(session_attributes,
                 build_speechlet_response(card_title, speech_output,
                     reprompt_text, should_end_session))
 
-    speech_output = "The %s is set %s" %(device, status)
+    speech_output = "The %s is set %s" %(device_str, status_str)
     should_end_session = True
 
     # build a simple message for the device
-    msg = {"name": intent["name"],
-            "status": intent["slots"]["status"]["value"],
-            "num": intent["slots"]["device"]["value"]}
+    msg = build_push_msg (intent["name"], deviceID, status, 0)
 
     return mqtt_publish (msg, session_attributes, card_title,
             speech_output, reprompt_text, should_end_session)
@@ -172,17 +242,29 @@ def get_system_percentage(intent):
     speech_output = ""
     reprompt_text = ""
     should_end_session = True
-    device = None
+
+    global deviceList
+    global deviceDict
 
     if "device" in intent["slots"]:
-        device = intent["slots"]["device"]["value"]
-        speech_output = "%s is currently %s \%" % (device, light_percentage)
+        device_str = intent["slots"]["device"]["value"]
+	device_str = device_str.lower ()
+
+        if device_str in deviceDict:
+	    device = deviceList[deviceDict[device_str]]
+	    if device.dimmable () == 0:
+                speech_output = "%s is not dimmable" % (device_str)
+                should_end_session = False
+    	    else:
+                speech_output = "%s is currently %d \%" % (device_str, device.getDim ())
+	else:
+	    speech_output = "unknown smart device"
+            should_end_session = False
     else:
         speech_output = "please tell me which smart device"
         should_end_session = False
 
-
-    return mqtt_publish (intent, session_attributes, card_title, speech_output,
+    return mqtt_publish ("", session_attributes, card_title, speech_output,
             reprompt_text, should_end_session)
 
 def set_system_percentage(intent):
@@ -190,24 +272,44 @@ def set_system_percentage(intent):
     card_title = "Smart home Status"
     speech_output = ""
     reprompt_text = ""
-    should_end_session = True
-    global light_percentage
+    should_end_session = False
     device = None
 
-    if "device" in intent["slots"]:
-        device = intent["slots"]["device"]["value"]
-        if "percentage" in intent["slots"]:
-            light_percentage = intent["slots"]["percentage"]["value"]
-            speech_output = "%s is set to %d\%" (device, light_percentage)
-        else:
-            speech_output = "please tell me dim"
-            should_end_session = False
-    else:
-        speech_output = "please tell me which smart device"
-        should_end_session = False
+    global deviceList
+    global deviceDict
 
-    return mqtt_publish (intent, session_attributes, card_title, speech_output,
+    if "dimdevice" in intent["slots"]:
+        device_str = intent["slots"]["dimdevice"]["value"]
+	device_str = device_str.lower ()
+
+        if device_str in deviceDict:
+	    device = deviceList[deviceDict[device_str]]
+	    if device.dimmable () == 0:
+                speech_output = "%s is not dimmable" % (device_str)
+    	    else:
+                if "percentage" in intent["slots"]:
+                    light_percentage = intent["slots"]["percentage"]["value"]
+                    speech_output = "%s is set to %d\%" (device_str, light_percentage)
+		    device.dim (light_percentage)
+                else:
+                    reprompt_text = "please tell me dim"
+	else:
+	    speech_output = "unknown smart device"
+    else:
+        reprompt_text = "please tell me which smart device"
+
+
+    if device != None:
+        # build a simple message for the device
+        should_end_session = True
+        msg = build_push_msg (intent["name"], device.id (), device.status () device.getDim ())
+        return mqtt_publish (msg, session_attributes, card_title, speech_output,
             reprompt_text, should_end_session)
+    else:
+        reprompt_text = "please give me proper instruction"
+        return build_response(session_attributes,
+                build_speechlet_response(card_title, speech_output,
+                    reprompt_text, should_end_session))
 
 def mqtt_publish (intent, session_attributes, card_title, speech_output,
         reprompt_text, should_end_session):
@@ -244,4 +346,17 @@ def build_response(session_attributes, speechlet_response):
         "version": "1.0",
         "sessionAttributes": session_attributes,
         "response": speechlet_response
+    }
+
+def build_push_msg(intent, id, status, dim):
+    if status == "on":
+	status = 1
+    else if status == "off":
+	status = 0
+
+    return {
+        "name": intent,
+        "deviceID": id,
+        "status": status
+        "dim": dim
     }
