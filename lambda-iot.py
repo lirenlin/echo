@@ -125,7 +125,6 @@ def handle_session_end_request(intent):
     speech_output = "Thank you for using the i-ideal skill.  See you next time!"
     reprompt_text = ""
     should_end_session = True
-    msg = {"name": "stop"}
     msg = build_push_msg ("stop", 0, 0, 0)
 
     return mqtt_publish (msg, session_attributes, card_title, speech_output,
@@ -349,14 +348,9 @@ def build_response(session_attributes, speechlet_response):
     }
 
 def build_push_msg(intent, id, status, dim):
-    if status == "on":
-	status = 1
-    else if status == "off":
-	status = 0
-
     return {
         "name": intent,
         "deviceID": id,
-        "status": status
+        "status": status,
         "dim": dim
     }
