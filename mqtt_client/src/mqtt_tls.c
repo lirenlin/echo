@@ -64,28 +64,29 @@ static int stop = 0;
 
 log_create_module(mqtt_tls, PRINT_LEVEL_INFO);
 
-static void callBack (char *intent, char *argument, int num)
+static void callBack (char *intent, int status, int deviceID, int dim)
 {
-	if (strcmp (intent, "SetLightStatus") == 0)
+	if (strcmp (intent, "SetDeviceStatus") == 0)
 	{
 		int i;
 		for (i = 0; i < 4; ++i)
 		{
-			if (num != 4 && i != num)
+			if (deviceID != 0 && i != deviceID - 1)
 				continue;
 
 			hal_gpio_pin_t pin = led_pins[i];
-			if (strcmp (argument, "off") == 0)
+			if (status == 0)
 				hal_gpio_set_output (pin, HAL_GPIO_DATA_LOW);
-			else if (strcmp (argument, "on") == 0)
+			else if (status == 1)
 				hal_gpio_set_output (pin, HAL_GPIO_DATA_HIGH);
 			else
-				LOG_I (mqtt_tls, "Unknow intent value");
+				LOG_I (mqtt_tls, "Unknow status");
 
 
 		}
-
 	}
+	else if (strcmp (intent, "SetDeviceDim") == 0)
+		LOG_I (mqtt_tls, "%s %s %d %d", intent, status, deviceID, dim);
 	else
 		LOG_I (mqtt_tls, "Unknow intent");
 }
@@ -102,8 +103,9 @@ static void messageArrived(MessageData *md)
     cJSON *json;
 
     char *intent;
-    char *argument;
-    int num = 0;
+    int status;
+    int deviceID = 0;
+    int dim = 0;
 
     //LOG_I(mqtt_tls, "Message arrived: qos %d, retained %d, dup %d, packetid %d\n", 
     //    message->qos, message->retained, message->dup, message->id);
@@ -111,26 +113,32 @@ static void messageArrived(MessageData *md)
 
     json = cJSON_Parse (payload);
     if (!json) {
-	LOG_I (mqtt_tls, "Error parsing mqtt message");
-	return;
-    } else {
+	    LOG_I (mqtt_tls, "Error parsing mqtt message");
+	    return;
+    }
+    else {
 	    cJSON *item = cJSON_GetObjectItem (json, "name");
 	    intent = item->valuestring;
-	    if (strcmp (intent, "SetLightStatus") == 0)
+	    if (strcmp (intent, "SetDeviceStatus") == 0
+			    || strcmp (intent, "SetDeviceDim") == 0)
 	    {
 		    cJSON *item = cJSON_GetObjectItem (json, "status");
-			  if (item)
-				  argument = item->valuestring;
-				
-				item = cJSON_GetObjectItem (json, "num");
-				if (item)
-				  num = item->valueint - 1;
+		    if (item)
+			    status = item->valueint;
 
-				LOG_I (mqtt_tls, "%s, %s, %d", intent, argument, num);
-				callBack (intent, argument, num);
-		  }
-			else if (strcmp (intent, "stop") == 0)
-				stop = 1; 
+		    item = cJSON_GetObjectItem (json, "deviceID");
+		    if (item)
+			    deviceID = item->valueint;
+
+		    item = cJSON_GetObjectItem (json, "dim");
+		    if (item)
+			    dim = item->valueint - 1;
+
+		    LOG_I (mqtt_tls, "%s, %d, %d, %d", intent, deviceID, status, dim);
+		    callBack (intent, status, deviceID, dim);
+	    }
+	    else if (strcmp (intent, "stop") == 0)
+		    stop = 1;
     }
     ++arrivedcount;
 }

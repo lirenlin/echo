@@ -53,8 +53,8 @@
 #include "task_def.h"
 
 
-#define WIFI_SSID                ("virginmedia9030248")
-#define WIFI_PASSWORD            ("jsnfbrnj")
+#define WIFI_SSID                ("iPhone")
+#define WIFI_PASSWORD            ("yourpassword")
 
 #define LED_NUM	                 4
 hal_gpio_pin_t led_pins[] = {HAL_GPIO_35, HAL_GPIO_34, HAL_GPIO_33, HAL_GPIO_6};
