@@ -3,9 +3,9 @@ GetDeviceStatus what is the status of {device}
 
 SetDeviceStatus set the {device} {status}
 SetDeviceStatus turn the {device} {status}
-SetDeviceStatus turn {status} {device}
+SetDeviceStatus turn {status} the {device}
 SetDeviceStatus {device} {status}
 
 GetDeviceDim what is the percentage of {dimdevice}
-SetDeviceDim set the {dimdevice} to {percentage}
-SetDeviceDim dim the {dimdevice} to {percentage}
+SetDeviceDim set the {dimdevice} to {percentage} percent
+SetDeviceDim dim the {dimdevice} to {percentage} percent
