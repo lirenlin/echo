@@ -6,10 +6,10 @@ client = boto3.client('iot-data', region_name='eu-west-1')
 topic = r"$aws/things/dummy/shadow/update"
 
 initialized = False
-deviceList = []
 deviceDict = {}
 
 class Device:
+	deviceList = []
 	def __init__ (self, id, name, dimmable, status=0):
 		# Those attribute are read-only
 		self.deviceID = id;
@@ -37,12 +37,31 @@ class Device:
 	def isDimmable (self):
 		return self.dimmable
 	def __str__ (self):
-		return "deviceID: %s, Name: %s, Status: %s, Dimmable: %s" % \
-				(self.deviceID, self.name[0], self.status, self.dimmable)
+		string = ""
+		status = ["off", "on"][self.status]
+		if self.deviceID  == 0:
+			for dev in Device.deviceList[1:]:
+				string += dev.__str__ () + ' '
+		else:
+			string = "deviceID: %s, Name: %s, Status: %s, Dimmable: %d, dim: %d" % \
+					(self.deviceID, self.name[0], status, self.dimmable, self.dim)
+		return string
+
+	def alexa_str (self):
+		string = ""
+		status = ["off", "on"][self.status]
+		if self.deviceID  == 0:
+			for dev in Device.deviceList[1:]:
+				string += dev.alexa_str () + ' '
+		else:
+			if self.isDimmable () and self.dim > 0:
+				string = "%s is currently %s, %d percent." % (self.name[0], status, self.dim)
+			else:
+				string = "%s is currently %s." % (self.name[0], status)
+		return string			
 
 def init_device_list ():
 	global initialized
-	global deviceList
 	global deviceDict
 
 	if initialized:
@@ -51,31 +70,31 @@ def init_device_list ():
 		initialized = True
 	
 
-	deviceList = list ()
+	Device.deviceList = list ()
 	deviceDict = dict ()
 
-	name = ["all"]
-	deviceList.append (Device (0, name, 0))
+	name = ["all device", "all"]
+	Device.deviceList.append (Device (0, name, 0))
 
 	name = ["kitchen light", "kitchen"]
-	deviceList.append (Device (1, name, 0))
+	Device.deviceList.append (Device (1, name, 0))
 
 	name = ["living room light", "livingroom light", "living"]
-	deviceList.append (Device (2, name, 0))
+	Device.deviceList.append (Device (2, name, 0))
 
 	# this is dimmable
 	name = ["bedroom light", "bed room light", "bedroom"]
-	deviceList.append (Device (3, name, 1))
+	Device.deviceList.append (Device (3, name, 1))
 
 	name = ["coffee maker", "coffee", "coffeemaker"]
-	deviceList.append (Device (4, name, 0))
+	Device.deviceList.append (Device (4, name, 0))
 
 
         deviceDict = {"kitchen light": 1, "kitchen": 1,
                 "living room light": 2, "livingroom light": 2, "living": 2, 
                 "bedroom light": 3, "bed room light": 3, "bedroom": 3,
                 "coffee maker": 4, "coffee": 4, "coffeemaker": 4,
-                "all": 0}
+		"all device": 0, "all": 0}
 
 
 def lambda_handler (event, context):
@@ -165,7 +184,6 @@ def get_system_status(intent):
     speech_output = ""
     should_end_session = True
 
-    global deviceList
     global deviceDict
 
     if "device" in intent["slots"]:
@@ -173,13 +191,9 @@ def get_system_status(intent):
         device_str = device_str.lower()
 
         if device_str in deviceDict:
-            device = deviceList[deviceDict[device_str]];
+            device = Device.deviceList[deviceDict[device_str]];
 	    if device:
-	        status = ["off", "on"][device.getStatus ()]
-		if device.isDimmable ():
-                    speech_output = "%s is currently %s, %d percent" %(device_str, status, device.getDim ())
-	        else:
-                    speech_output = "%s is currently %s" %(device_str, status)
+	        speech_output = device.alexa_str ()
 	    else:
                 speech_output = "unknown device"
         else:
@@ -199,7 +213,6 @@ def set_system_status(intent):
     should_end_session = False
 
     global deviceDict
-    global deviceList
 
     deviceID = -1;
     status = None;
@@ -213,7 +226,7 @@ def set_system_status(intent):
         device_str = device_str.lower()
 
         if device_str in deviceDict:
-            device = deviceList[deviceDict[device_str]]
+            device = Device.deviceList[deviceDict[device_str]]
 
             # get proper status
             if "status" in intent["slots"]:
@@ -260,7 +273,6 @@ def set_system_percentage(intent):
     device = None
     error = True
 
-    global deviceList
     global deviceDict
 
     if "dimdevice" in intent["slots"]:
@@ -268,7 +280,7 @@ def set_system_percentage(intent):
 	device_str = device_str.lower ()
 
         if device_str in deviceDict:
-	    device = deviceList[deviceDict[device_str]]
+	    device = Device.deviceList[deviceDict[device_str]]
 	    if device.isDimmable () == 0:
                 speech_output = "%s is not dimmable" % (device_str)
 		device = None
