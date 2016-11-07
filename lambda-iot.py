@@ -258,6 +258,7 @@ def set_system_percentage(intent):
     reprompt_text = ""
     should_end_session = False
     device = None
+    error = True
 
     global deviceList
     global deviceDict
@@ -275,17 +276,22 @@ def set_system_percentage(intent):
                 if "percentage" in intent["slots"]:
                     light_percentage = int (intent["slots"]["percentage"]["value"])
 		    print light_percentage
-                    speech_output = "%s is set to %d percent" % (device_str, light_percentage)
-		    device.dimDevice (light_percentage)
+		    if light_percentage < 0 or light_percentage > 100:
+			speech_output = "%d percent is too large for %s, please give a number between 1 percent and 100 percent" \
+					    % (light_percentage, device_str)
+		    else:
+                    	speech_output = "%s is set to %d percent" % (device_str, light_percentage)
+		    	device.dimDevice (light_percentage)
+			error = False
                 else:
-                    reprompt_text = "please tell me dim"
+                    reprompt_text = "please tell me how much to dim"
 	else:
 	    speech_output = "unknown smart device"
     else:
         reprompt_text = "please tell me which smart device"
 
 
-    if device != None:
+    if error == False:
         # build a simple message for the device
         should_end_session = True
         msg = build_push_msg (intent["name"], device.getID (), device.getStatus (), device.getDim ())
