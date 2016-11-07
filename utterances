@@ -2,9 +2,18 @@ GetDeviceStatus tell me the status of {device}
 GetDeviceStatus what is the status of {device}
 
 SetDeviceStatus set the {device} {status}
+SetDeviceStatus set {device} {status}
+
 SetDeviceStatus turn the {device} {status}
+SetDeviceStatus turn {device} {status}
+
 SetDeviceStatus turn {status} the {device}
+SetDeviceStatus turn {status} {device}
+
 SetDeviceStatus {device} {status}
 
 SetDeviceDim set the {dimdevice} to {percentage} percent
+SetDeviceDim set {dimdevice} to {percentage} percent
+
 SetDeviceDim dim the {dimdevice} to {percentage} percent
+SetDeviceDim dim {dimdevice} to {percentage} percent
