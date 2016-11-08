@@ -166,7 +166,7 @@ def get_welcome_response():
     session_attributes = {}
     card_title = "i-ideal"
     speech_output = "Welcome to the i-ideal smart control system. "\
-    "You can ask me the information about the smart device"
+    "You can ask me the information about smart device"
     reprompt_text = "Please ask me for the status"
     should_end_session = False
     return build_response(session_attributes, build_speechlet_response(
@@ -259,7 +259,7 @@ def set_system_status(intent):
                 build_speechlet_response(card_title, speech_output,
                     reprompt_text, should_end_session))
 
-    speech_output = "The %s is set %s" %(device_str, status_str)
+    speech_output = "%s is set %s" %(device_str, status_str)
     should_end_session = True
 
     # build a simple message for the device
