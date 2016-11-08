@@ -20,7 +20,11 @@ class Device:
 		self.dim = 0;
 
 	def setStatus (self, status):
-		self.status = status
+		if self.deviceID == 0:
+		    for dev in Device.deviceList[1:]:
+			    dev.status = status
+	        else:
+		    self.status = status
 	def getStatus (self):
 		return self.status
 
@@ -39,7 +43,7 @@ class Device:
 	def __str__ (self):
 		string = ""
 		status = ["off", "on"][self.status]
-		if self.deviceID  == 0:
+		if self.deviceID == 0:
 			for dev in Device.deviceList[1:]:
 				string += dev.__str__ () + ' '
 		else:
@@ -73,7 +77,7 @@ def init_device_list ():
 	Device.deviceList = list ()
 	deviceDict = dict ()
 
-	name = ["all device", "all"]
+	name = ["all devices", "all device", "all"]
 	Device.deviceList.append (Device (0, name, 0))
 
 	name = ["kitchen light", "kitchen"]
@@ -94,7 +98,7 @@ def init_device_list ():
                 "living room light": 2, "livingroom light": 2, "living": 2, 
                 "bedroom light": 3, "bed room light": 3, "bedroom": 3,
                 "coffee maker": 4, "coffee": 4, "coffeemaker": 4,
-		"all device": 0, "all": 0}
+		"all devices": 0, "all": 0, "all device": 0}
 
 
 def lambda_handler (event, context):
@@ -214,7 +218,7 @@ def set_system_status(intent):
 
     global deviceDict
 
-    deviceID = -1;
+    device = None;
     status = None;
 
     status_str = None;
